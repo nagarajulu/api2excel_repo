@@ -1,6 +1,8 @@
 package hello;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.swagger.apibuilder.APIBuilder;
 
+import hello.storage.FileObj;
 import hello.storage.StorageFileNotFoundException;
 import hello.storage.StorageService;
 
@@ -36,11 +39,22 @@ public class FileUploadController {
 
     @GetMapping("/")
     public String listUploadedFiles(Model model) throws IOException {
-
-        model.addAttribute("files", storageService.loadAll().map(
+    	
+    	List<String> paths=storageService.loadAll().map(
                 path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
                         "serveFile", path.getFileName().toString()).build().toString())
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+    	
+    	List<FileObj> filesList=new ArrayList<FileObj>();
+    	
+    	for(String path: paths) {
+    		FileObj f=new FileObj();
+    		f.setFilename(path.substring(path.lastIndexOf("/")+1));
+    		f.setPath(path);
+    		filesList.add(f);
+    	}
+
+        model.addAttribute("files", filesList);
 
         return "uploadForm";
     }
@@ -64,7 +78,7 @@ public class FileUploadController {
     	//
         //storageService.store(file);
         redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
+                "Your swagger " + file.getOriginalFilename() + " is successfully parsed ! Please download your API documents below.");
 
         return "redirect:/";
     }

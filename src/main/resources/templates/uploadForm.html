@@ -1,9 +1,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-	<div th:if="${message}">
-		<h2 th:text="${message}"/>
-	</div>
+	
 
 	<div>
 		<form method="POST" enctype="multipart/form-data" action="/">
@@ -13,11 +11,20 @@
 			</table>
 		</form>
 	</div>
-
+	
+	<div th:if="${message}">
+		<h2 th:text="${message}"/>
+	</div>
+	
+	<div>
+			<table>
+				<!-- <tr th:each="file : ${files}"><td th:text="${file.filename}">API Name</td><td><a th:href="${file.path}" th:text="${file.filename}" /></td></tr> -->
+			</table>
+	</div>
 	<div>
 		<ul>
 			<li th:each="file : ${files}">
-				<a th:href="${file}" th:text="${file}" />
+				<a th:href="${file.path}" th:text="${file.filename}" />
 			</li>
 		</ul>
 	</div>
