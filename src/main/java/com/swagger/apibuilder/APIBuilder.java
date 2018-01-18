@@ -29,6 +29,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.swagger.apibuilder.UIMessage.MESSAGETYPE;
+
 import hello.storage.StorageService;
 
 
@@ -124,8 +126,11 @@ public class APIBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void parseJSONFile(String fileName, MultipartFile multipartFile, final StorageService storageService){
+	public ParseResult parseJSONFile(String fileName, MultipartFile multipartFile, final StorageService storageService){
+		final ParseResult pr=new ParseResult();
 		final ObjectMapper om = new ObjectMapper() ;
+		List<String> apiUriList = new ArrayList<String>();
+		
 		try {
 			//final File jsonFileName = new File (fileName);
 			final JsonNode inputDoc = om.readTree(multipartFile.getInputStream());
@@ -155,6 +160,7 @@ public class APIBuilder {
 				
 				final ArrayList<String[]> apiInfo = new ArrayList<String[]>();
 				apiInfo.add(new String[]{swaggerTitle, swaggerVersion, swaggerDescription, swaggerBaseURI+pathName});
+				apiUriList.add(swaggerBaseURI+pathName);
 				
 				final JsonNode pathNode = paths.findValue(pathName);
 				
@@ -296,11 +302,23 @@ public class APIBuilder {
 			JsonPrettyPrint jp = new JsonPrettyPrint(System.out);
 			//jp.print(parent);
 			
+			UIMessage uiMsg=new UIMessage();
+			uiMsg.setMessageType(MESSAGETYPE.INFO);
+			uiMsg.setMessage("Your swagger " + multipartFile.getOriginalFilename() + " is successfully parsed ! Please download your API documents below.");
+			
+			pr.setUiMsg(uiMsg);
+			pr.setURI(apiUriList);
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			UIMessage uiMsg=new UIMessage();
+			uiMsg.setMessageType(MESSAGETYPE.ERROR);
+			uiMsg.setMessage("Error parsing the swagger file - "+multipartFile.getOriginalFilename());
+			
+			pr.setUiMsg(uiMsg);
 		}
-		
+		return pr;
 	}
 	
 	/**
