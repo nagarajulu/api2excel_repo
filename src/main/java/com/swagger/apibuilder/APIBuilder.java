@@ -29,9 +29,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.apibuilder.storage.StorageService;
 import com.swagger.apibuilder.UIMessage.MESSAGETYPE;
-
-import hello.storage.StorageService;
 
 
 public class APIBuilder {

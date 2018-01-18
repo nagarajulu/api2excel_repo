@@ -1,4 +1,4 @@
-package hello;
+package com.apibuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,13 +26,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.apibuilder.storage.FileObj;
+import com.apibuilder.storage.StorageFileNotFoundException;
+import com.apibuilder.storage.StorageService;
 import com.swagger.apibuilder.APIBuilder;
 import com.swagger.apibuilder.ParseResult;
 import com.wsdl.isdbuilder.ISDBuilder;
-
-import hello.storage.FileObj;
-import hello.storage.StorageFileNotFoundException;
-import hello.storage.StorageService;
 
 @Controller
 public class FileUploadController implements ErrorController {
