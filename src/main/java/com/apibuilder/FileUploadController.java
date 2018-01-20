@@ -39,8 +39,7 @@ public class FileUploadController implements ErrorController {
 	private static final String PATH = "/error";
 
     @RequestMapping(value = PATH)
-    public String error(Model model) {
-    	model.addAttribute("message", " FILE SIZE EXCEEDED or OTHER ERROR OCCURRED.");
+    public String error(Model model, RedirectAttributes redirectAttributes) {
     	
 		return "uploadForm";
     }
@@ -109,17 +108,25 @@ public class FileUploadController implements ErrorController {
 			} catch (WSDLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				redirectAttributes.addFlashAttribute("message", " ERROR OCCURRED.");
+				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+				return "redirect:/error";
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				redirectAttributes.addFlashAttribute("message", " ERROR OCCURRED.");
-			}    	
+				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+				return "redirect:/error";
+			}
+        	catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+				return "redirect:/error";
+			}
         	//
             //storageService.store(file);
         	
         	//redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
-    		redirectAttributes.addFlashAttribute("message", " WSDL file uploaded."+file.getOriginalFilename());
+    		redirectAttributes.addFlashAttribute("message", "WSDL file successfully uploaded "+file.getOriginalFilename() + " and APIs are generated for the operations. Please download below");
     		
     	}
     	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
@@ -133,7 +140,8 @@ public class FileUploadController implements ErrorController {
         	redirectAttributes.addFlashAttribute("apiUriList", pr.getURI());
     	}
     	else {
-    		redirectAttributes.addFlashAttribute("message", " Neither WSDL nor JSON file uploaded. Please try with one of these file formats "+file.getOriginalFilename());
+    		redirectAttributes.addFlashAttribute("message", "File uploaded by you "+file.getOriginalFilename()+" is not matching the supported formats: WSDL, Swagger(.JSON) ");
+    		return "redirect:/error";
     	}
     	
 
@@ -145,6 +153,7 @@ public class FileUploadController implements ErrorController {
         return ResponseEntity.notFound().build();
     }
 
+    //@RequestMapping(value = PATH)
     @ExceptionHandler(FileSizeLimitExceededException.class)
     public String uploadedAFileTooLarge(FileSizeLimitExceededException e) {
         return "FILE SIZE EXCEEDED";
