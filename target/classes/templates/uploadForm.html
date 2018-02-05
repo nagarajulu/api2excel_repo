@@ -1,24 +1,40 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
+	<div>
+		<h2>Welcome to API-2-EXCEL DOCUMENT GENERATION PLATFORM</h2>
+	</div>
 	
+	<div>
+		<h3>Features in API document</h3>
+		<ul>
+			<li>API Document will have two sheets: Request and Response</li>
+			<li>Each sheet will have the following information parsed from WSDL/Swagger(JSON)</li>
+			<li>Element/attribute name, data type, cardinality(mandatory/optional), xpath, description (annotation)</li>
+		</ul>
+	</div>
 
 	<div>
+	
 		<form method="POST" enctype="multipart/form-data" action="/">
 			<table>
-				<tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
-				<tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+				<tr><td><h4>Please select one of APIs.</h4> </td><td></td></tr>
+				<tr><td><h4>1. WSDL (SOAP WebServices)</h4> </td><td></td></tr>
+				<tr><td><h4>2. JSON (Swaggers - RESTful APIs)</h4> </td><td></td></tr>
+				<tr><td><h4>File to upload:</h4></td><td><h4><input type="file" name="file" /></h4></td></tr>
+				<tr><td></td><td><h4><input type="submit" value="Upload" /></h4></td></tr>
 			</table>
 		</form>
 	</div>
+	
 	
 	<div th:if="${message}">
 		<h2 th:text="${message}"/>
 	</div>
 	
-	<div>
+	<div th:if="${apiUriList}">
 			<table>
-				<!-- <tr th:each="file : ${files}"><td th:text="${file.filename}">API Name</td><td><a th:href="${file.path}" th:text="${file.filename}" /></td></tr> -->
+				 <!--  <tr th:each="apiUri : ${apiUriList}"><td th:text="${apiUri}">API Name</td></tr>-->
 			</table>
 	</div>
 	<div>
