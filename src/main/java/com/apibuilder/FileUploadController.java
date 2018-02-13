@@ -69,7 +69,7 @@ public class FileUploadController implements ErrorController {
     	for(String path: paths) {
     		FileObj f=new FileObj();
     		f.setFilename(path.substring(path.lastIndexOf("/")+1));
-    		f.setPath(path);
+    		f.setUri(path);
     		filesList.add(f);
     	}
 
@@ -137,7 +137,7 @@ public class FileUploadController implements ErrorController {
             //storageService.store(file);
         	
         	redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
-        	redirectAttributes.addFlashAttribute("apiUriList", pr.getURI());
+        	redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
     	}
     	else {
     		redirectAttributes.addFlashAttribute("message", "File uploaded by you "+file.getOriginalFilename()+" is not matching the supported formats: WSDL, Swagger(.JSON) ");

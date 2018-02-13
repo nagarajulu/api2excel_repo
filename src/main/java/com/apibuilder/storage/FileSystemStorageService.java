@@ -29,24 +29,32 @@ public class FileSystemStorageService implements StorageService {
     }
 
     @Override
-    public void store(File file) {
-        String filename = file.getAbsolutePath(); //StringUtils.cleanPath(file.getOriginalFilename());
+    public String store(File file) {
+        //String filename = file.getAbsolutePath(); //StringUtils.cleanPath(file.getOriginalFilename());
+    	String uri=null;
         try {
            /* if (file.isEmpty()) {
                 throw new StorageException("Failed to store empty file " + filename);
             }*/
-            if (filename.contains("..")) {
+            /*if (filename.contains("..")) {
                 // This is a security check
                 throw new StorageException(
                         "Cannot store file with relative path outside current directory "
                                 + filename);
-            }
-            Files.copy(new FileInputStream(file), this.rootLocation.resolve(file.getName()),
-                    StandardCopyOption.REPLACE_EXISTING);
+            }*/
+            //final Path targetFilePath = this.rootLocation.resolve(file.getName());
+			//Files.copy(new FileInputStream(file), targetFilePath,
+            //       StandardCopyOption.REPLACE_EXISTING);
+			
+			S3BucketStorageService s3Bucket=new S3BucketStorageService();
+			
+			uri=s3Bucket.storeToS3Bucket(file);
         }
-        catch (IOException e) {
-            throw new StorageException("Failed to store file " + filename, e);
+        catch (Exception e) {
+            throw new StorageException("Failed to store file " + file.getName(), e);
         }
+        
+        return uri;
     }
 
     @Override
@@ -71,6 +79,8 @@ public class FileSystemStorageService implements StorageService {
     public Resource loadAsResource(String filename) {
         try {
             Path file = load(filename);
+            
+            
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;

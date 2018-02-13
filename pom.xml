@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.springframework</groupId>
-    <artifactId>gs-uploading-files</artifactId>
+    <groupId>com.apibuilder</groupId>
+    <artifactId>swagger-apibuilder</artifactId>
     <version>0.1.0</version>
 
     <parent>
@@ -60,6 +60,21 @@
       <version>2.0.26</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.codehaus.jackson</groupId>
+    	<artifactId>jackson-core-asl</artifactId>
+    	<version>1.8.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.codehaus.jackson</groupId>
+    	<artifactId>jackson-mapper-asl</artifactId>
+    	<version>1.8.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.amazonaws</groupId>
+    	<artifactId>aws-java-sdk-s3</artifactId>
+    	<version>1.11.273</version>
+    </dependency>
     </dependencies>
 
     <properties>
@@ -70,8 +85,11 @@
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+                <artifactId>spring-boot-maven-plugin</artifactId>  
+                <configuration>
+	                <mainClass>com.apibuilder.Application</mainClass>
+	            </configuration>               
+            </plugin>            
         </plugins>
     </build>
 

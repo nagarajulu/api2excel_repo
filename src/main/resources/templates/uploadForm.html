@@ -33,17 +33,16 @@
 	</div>
 	
 	<div th:if="${apiUriList}">
+	<ul>
+			<li th:each="fileObj : ${apiUriList}">
+				<a th:href="${fileObj.uri}" th:text="${fileObj.filename}" />
+			</li>
+		</ul>
 			<table>
 				 <!--  <tr th:each="apiUri : ${apiUriList}"><td th:text="${apiUri}">API Name</td></tr>-->
 			</table>
 	</div>
-	<div>
-		<ul>
-			<li th:each="file : ${files}">
-				<a th:href="${file.path}" th:text="${file.filename}" />
-			</li>
-		</ul>
-	</div>
+	
 
 </body>
 </html>

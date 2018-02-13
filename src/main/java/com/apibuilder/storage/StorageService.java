@@ -11,7 +11,7 @@ public interface StorageService {
 
     void init();
 
-    void store(File file);
+    String store(File file);
 
     Stream<Path> loadAll();
 

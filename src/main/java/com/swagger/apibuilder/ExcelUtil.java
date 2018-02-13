@@ -115,7 +115,7 @@ public class ExcelUtil {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public static void createExcel(String serviceName, String operationName,
+	public static String createExcel(String serviceName, String operationName,
 			String[] reqTitles, String[] respTitles, String[] apiInfoTitles,
 			String[][] reqData, String[][] rspData, String[][] apiInfoData, ISDOptions bldOptipons,
 			final StorageService storageService) throws IOException, ParseException {
@@ -151,7 +151,10 @@ public class ExcelUtil {
 		FileOutputStream out = new FileOutputStream(file);
 		wb.write(out);
 		out.close();
-		//storageService.store(file);
+		
+		String uri=storageService.store(file);
+		
+		return uri;
 		
 	}
 	

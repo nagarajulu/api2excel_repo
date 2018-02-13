@@ -10,13 +10,14 @@ public class FileObj {
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
-	public String getPath() {
-		return path;
+	
+	String uri;
+	public String getUri() {
+		return uri;
 	}
-	public void setPath(String path) {
-		this.path = path;
+	public void setUri(String uri) {
+		this.uri = uri;
 	}
-	String path;
 
 	
 }

@@ -29,6 +29,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.apibuilder.storage.FileObj;
 import com.apibuilder.storage.StorageService;
 import com.swagger.apibuilder.UIMessage.MESSAGETYPE;
 
@@ -128,7 +129,7 @@ public class APIBuilder {
 	public ParseResult parseJSONFile(String fileName, MultipartFile multipartFile, final StorageService storageService){
 		final ParseResult pr=new ParseResult();
 		final ObjectMapper om = new ObjectMapper() ;
-		List<String> apiUriList = new ArrayList<String>();
+		List<FileObj> apiUriList = new ArrayList<FileObj>();
 		
 		try {
 			//final File jsonFileName = new File (fileName);
@@ -159,7 +160,7 @@ public class APIBuilder {
 				
 				final ArrayList<String[]> apiInfo = new ArrayList<String[]>();
 				apiInfo.add(new String[]{swaggerTitle, swaggerVersion, swaggerDescription, swaggerBaseURI+pathName});
-				apiUriList.add(swaggerBaseURI+pathName);
+				//apiUriList.add(swaggerBaseURI+pathName);
 				
 				final JsonNode pathNode = paths.findValue(pathName);
 				
@@ -271,7 +272,7 @@ public class APIBuilder {
 						final String operationName = pathName.substring(pathName.indexOf("/")+1);
 						final String serviceName = multipartFile.getOriginalFilename().replaceAll(".json", "");
 						System.out.println("generating file..."+serviceName);
-						ExcelUtil.createExcel(
+						String uri=ExcelUtil.createExcel(
 								serviceName,
 								operationId,
 								reqExcelTitle,
@@ -287,6 +288,11 @@ public class APIBuilder {
 								bldOptipons, 
 								storageService
 										);
+						
+						FileObj fileNameUri=new FileObj();
+						fileNameUri.setFilename(uri.substring(uri.lastIndexOf("/")+1));
+						fileNameUri.setUri(uri);
+						apiUriList.add(fileNameUri);
 					} catch (IOException | ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -306,7 +312,7 @@ public class APIBuilder {
 			uiMsg.setMessage("Your swagger " + multipartFile.getOriginalFilename() + " is successfully parsed ! Please download your API documents below.");
 			
 			pr.setUiMsg(uiMsg);
-			pr.setURI(apiUriList);
+			pr.setFileURIs(apiUriList);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
