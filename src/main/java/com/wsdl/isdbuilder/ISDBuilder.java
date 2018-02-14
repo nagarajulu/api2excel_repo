@@ -78,6 +78,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import com.apibuilder.storage.StorageService;
+import com.apibuilder.util.ExcelOptions;
 import com.sun.xml.xsom.XSAnnotation;
 import com.sun.xml.xsom.XSComplexType;
 import com.sun.xml.xsom.XSContentType;
@@ -98,81 +99,10 @@ import com.sun.xml.xsom.visitor.XSVisitor;
 
 /**
  * 
- * @author ejerobr
+ * @author Nagarajulu Aerakoni
  *
  */
 public class ISDBuilder {
-
-	private ISDOptions bldOptipons = new ISDOptions();;
-
-	/**
-	 * 
-	 * @param args
-	 */
-	/*public static void main(String[] args) {
-		ISDBuilder builder = new ISDBuilder();
-		try {
-			if (!builder.parseCommandLineArg(args)) {
-				return;
-			}
-			if (builder.bldOptipons.getWSDLsDirectory() != null) {
-				List<String> fileNames = builder.scanDirectory(
-						builder.bldOptipons.getWSDLsDirectory(), "*.wsdl");
-				if ((fileNames != null) && (fileNames.size() != 0)) {
-					for (String fileName : fileNames) {
-						builder.parseWDSDL(fileName);
-					}
-				} else {
-					System.out.println("No WSDL found to convert");
-				}
-			} 
-			else if (builder.bldOptipons.getWsdlsFile() != null)
-			{
-				builder.parseWDSDL(builder.bldOptipons.getWsdlsFile());
-			}
-			else {
-				builder.parseWDSDL(args[0]);
-			}
-
-		} catch (WSDLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}*/
-
-	/**
-	 * parseCommandLineArg
-	 *
-	 * @param args
-	 * @return
-	 */
-	private boolean parseCommandLineArg(String[] args) {
-
-		bldOptipons = new ISDOptions();
-		CmdLineParser parser = new CmdLineParser(bldOptipons);
-
-		parser.setUsageWidth(80);
-
-		try {
-			if (args.length == 0)
-			{
-				throw new CmdLineException("args required");
-			}
-			
-			parser.parseArgument(args);
-			return true;
-
-		} catch (CmdLineException e) {
-
-			System.err.println(e.getMessage());
-			System.err
-					.println("java -jar isdbuilder.jar [options...] arguments...");
-			// print the list of available options
-			parser.printUsage(System.err);
-			System.err.println();
-			return false;
-		}
-	}
 
 	/**
 	 * Scan the directory for WSDL files.
@@ -347,7 +277,7 @@ public class ISDBuilder {
 								XSComplexType tutu = reqType.getType()
 										.asComplexType();
 								//tutu.visit(new ExcelWriter(reqData, schemaSet, new String[] {service.getQName().getLocalPart(), operation.getName(), reqTypeName}));
-								tutu.visit(new ExcelWriter(reqData, schemaSet, new String[] {}, bldOptipons.getTab()));
+								tutu.visit(new ExcelWriter(reqData, schemaSet, new String[] {}, ExcelOptions.TAB));
 
 							} else {
 								System.err.println("NOT FOUND: " + reqTypeName);
@@ -398,7 +328,7 @@ public class ISDBuilder {
 								XSComplexType tutu = rspType.getType()
 										.asComplexType();
 								//tutu.visit(new ExcelWriter(rspData, schemaSet, new String[] {service.getQName().getLocalPart(), operation.getName(), rspTypeName}));
-								tutu.visit(new ExcelWriter(rspData, schemaSet, new String[] {}, bldOptipons.getTab()));
+								tutu.visit(new ExcelWriter(rspData, schemaSet, new String[] {}, ExcelOptions.TAB));
 
 							} else {
 								System.err.println("NOT FOUND: " + rspTypeName);

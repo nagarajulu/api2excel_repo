@@ -117,7 +117,7 @@ public class ExcelUtil {
 	 */
 	public static String createExcel(String serviceName, String operationName,
 			String[] reqTitles, String[] respTitles, String[] apiInfoTitles,
-			String[][] reqData, String[][] rspData, String[][] apiInfoData, ISDOptions bldOptipons,
+			String[][] reqData, String[][] rspData, String[][] apiInfoData, 
 			final StorageService storageService) throws IOException, ParseException {
 		Workbook wb = new XSSFWorkbook();
 

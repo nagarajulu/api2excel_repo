@@ -36,39 +36,6 @@ import com.swagger.apibuilder.UIMessage.MESSAGETYPE;
 
 public class APIBuilder {
 	
-	private ISDOptions bldOptipons;
-
-	/*public static void main(String[] args) {
-		APIBuilder builder = new APIBuilder();
-		try {
-			if (!builder.parseCommandLineArg(args)) {
-				return;
-			}
-			if (builder.bldOptipons.getJsonDirectory() != null) {
-				List<String> fileNames = builder.scanDirectory(
-						builder.bldOptipons.getJsonDirectory(), "*.json");
-				if ((fileNames != null) && (fileNames.size() != 0)) {
-					for (String fileName : fileNames) {
-						builder.parseJSONFile(fileName, null, null);;
-					}
-				} else {
-					System.out.println("No JSON found to convert");
-				}
-			} 
-			else if (builder.bldOptipons.getJsonFile() != null)
-			{
-				//builder.parseWDSDL(builder.bldOptipons.getJsonFile());
-			}
-			else {
-				//builder.parseWDSDL(args[0]);
-			}
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}*/
 	
 	/**
 	 * Scan the directory for WSDL files.
@@ -91,39 +58,7 @@ public class APIBuilder {
 		}
 		return fileNames;
 	}
-	/**
-	 * parseCommandLineArg
-	 *
-	 * @param args
-	 * @return
-	 */
-	private boolean parseCommandLineArg(String[] args) {
-
-		bldOptipons = new ISDOptions();
-		CmdLineParser parser = new CmdLineParser(bldOptipons);
-
-		parser.setUsageWidth(80);
-
-		try {
-			if (args.length == 0)
-			{
-				throw new CmdLineException("args required");
-			}
-			
-			parser.parseArgument(args);
-			return true;
-
-		} catch (CmdLineException e) {
-
-			System.err.println(e.getMessage());
-			System.err
-					.println("java -jar isdbuilder.jar [options...] arguments...");
-			// print the list of available options
-			parser.printUsage(System.err);
-			System.err.println();
-			return false;
-		}
-	}
+	
 
 	@SuppressWarnings("unchecked")
 	public ParseResult parseJSONFile(String fileName, MultipartFile multipartFile, final StorageService storageService){
@@ -285,7 +220,6 @@ public class APIBuilder {
 												.toArray(new String[rspData.size()][])), 
 								(String[][]) (apiInfo
 										.toArray(new String[apiInfo.size()][])), 
-								bldOptipons, 
 								storageService
 										);
 						
