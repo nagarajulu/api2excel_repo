@@ -26,12 +26,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.apibuilder.json.JSONBuilder;
 import com.apibuilder.storage.FileObj;
 import com.apibuilder.storage.StorageFileNotFoundException;
 import com.apibuilder.storage.StorageService;
-import com.swagger.apibuilder.APIBuilder;
-import com.swagger.apibuilder.ParseResult;
-import com.wsdl.isdbuilder.ISDBuilder;
+import com.apibuilder.util.ParseResult;
+import com.apibuilder.wsdl.WSDLBuilder;
 
 @Controller
 public class FileUploadController implements ErrorController {
@@ -102,7 +102,7 @@ public class FileUploadController implements ErrorController {
 
     	if(file.getOriginalFilename().endsWith(".wsdl") || file.getContentType()=="text/xml") {
     		//API Builder source code
-        	ISDBuilder apiBuilder = new ISDBuilder();
+        	WSDLBuilder apiBuilder = new WSDLBuilder();
         	try {
 				apiBuilder.parseWSDL("", file, storageService);
 			} catch (WSDLException e) {
@@ -131,7 +131,7 @@ public class FileUploadController implements ErrorController {
     	}
     	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
     		//API Builder source code
-        	APIBuilder apiBuilder = new APIBuilder();
+        	JSONBuilder apiBuilder = new JSONBuilder();
         	ParseResult pr=apiBuilder.parseJSONFile("", file, storageService);    	
         	//
             //storageService.store(file);

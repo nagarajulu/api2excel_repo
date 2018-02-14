@@ -1,4 +1,4 @@
-package com.swagger.apibuilder;
+package com.apibuilder.util;
 
 public class UIMessage {
 	

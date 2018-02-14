@@ -1,4 +1,4 @@
-package com.swagger.apibuilder;
+package com.apibuilder.json;
 
 
 import java.io.File;
@@ -31,10 +31,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.apibuilder.storage.FileObj;
 import com.apibuilder.storage.StorageService;
-import com.swagger.apibuilder.UIMessage.MESSAGETYPE;
+import com.apibuilder.util.ParseResult;
+import com.apibuilder.util.UIMessage;
+import com.apibuilder.util.UIMessage.MESSAGETYPE;
 
 
-public class APIBuilder {
+public class JSONBuilder {
 	
 	
 	/**

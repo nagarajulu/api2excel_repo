@@ -1,4 +1,4 @@
-package com.wsdl.isdbuilder;
+package com.apibuilder.wsdl;
 
 import com.sun.xml.xsom.ForeignAttributes;
 import com.sun.xml.xsom.XSAnnotation;
@@ -733,7 +733,7 @@ public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
 					//orig println(decl.getName());
 					
 					//BOB Begin - Resolve external element
-					XSElementDecl nestedDecl = ISDBuilder.findEntryPoint(schemaSet, decl.getTargetNamespace(), decl.getName());
+					XSElementDecl nestedDecl = WSDLBuilder.findEntryPoint(schemaSet, decl.getTargetNamespace(), decl.getName());
 					
 					String qualifiedName = decl.getTargetNamespace() + "/" + decl.getName();
 					//println(decl.getName(), qualifiedName, "");

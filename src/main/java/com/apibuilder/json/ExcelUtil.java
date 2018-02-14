@@ -1,4 +1,4 @@
-package com.swagger.apibuilder;
+package com.apibuilder.json;
 
 import java.io.File;
 import java.io.FileOutputStream;

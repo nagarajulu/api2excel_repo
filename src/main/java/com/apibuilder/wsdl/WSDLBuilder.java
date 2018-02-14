@@ -1,4 +1,4 @@
-package com.wsdl.isdbuilder;
+package com.apibuilder.wsdl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -102,7 +102,7 @@ import com.sun.xml.xsom.visitor.XSVisitor;
  * @author Nagarajulu Aerakoni
  *
  */
-public class ISDBuilder {
+public class WSDLBuilder {
 
 	/**
 	 * Scan the directory for WSDL files.

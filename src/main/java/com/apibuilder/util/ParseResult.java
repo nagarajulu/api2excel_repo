@@ -1,4 +1,4 @@
-package com.swagger.apibuilder;
+package com.apibuilder.util;
 
 import java.util.List;
 
