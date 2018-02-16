@@ -77,8 +77,11 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import com.apibuilder.storage.FileObj;
+import com.apibuilder.storage.S3BucketStorageService;
 import com.apibuilder.storage.StorageService;
 import com.apibuilder.util.ExcelOptions;
+import com.apibuilder.util.ParseResult;
 import com.sun.xml.xsom.XSAnnotation;
 import com.sun.xml.xsom.XSComplexType;
 import com.sun.xml.xsom.XSContentType;
@@ -132,11 +135,13 @@ public class WSDLBuilder {
 	 * @throws WSDLException
 	 * @throws IOException 
 	 */
-	public void parseWSDL(String wsdlUri,  MultipartFile multipartFile, final StorageService storageService) throws WSDLException, IOException {
+	public ParseResult parseWSDL(String wsdlUri,  MultipartFile multipartFile, final S3BucketStorageService s3StorageService) throws WSDLException, IOException {
 
 		System.out.println("\n\n=========== PARSING WSDL ====================");
 
 		//InputStream inputStream= new FileInputStream(file);
+		ParseResult pr=new ParseResult();
+		List<FileObj> apiUriList = new ArrayList<FileObj>();
 		
 		WSDLReader wsdlReader11 = WSDLFactory.newInstance().newWSDLReader();
 		Definition def = wsdlReader11.readWSDL(null, new InputSource(multipartFile.getInputStream()));
@@ -276,8 +281,8 @@ public class WSDLBuilder {
 							if (reqType != null) {
 								XSComplexType tutu = reqType.getType()
 										.asComplexType();
-								//tutu.visit(new ExcelWriter(reqData, schemaSet, new String[] {service.getQName().getLocalPart(), operation.getName(), reqTypeName}));
-								tutu.visit(new ExcelWriter(reqData, schemaSet, new String[] {}, ExcelOptions.TAB));
+								//tutu.visit(new SchemaWalker(reqData, schemaSet, new String[] {service.getQName().getLocalPart(), operation.getName(), reqTypeName}));
+								tutu.visit(new SchemaWalker(reqData, schemaSet, new String[] {}, ExcelOptions.TAB));
 
 							} else {
 								System.err.println("NOT FOUND: " + reqTypeName);
@@ -327,8 +332,8 @@ public class WSDLBuilder {
 							if (rspType != null) {
 								XSComplexType tutu = rspType.getType()
 										.asComplexType();
-								//tutu.visit(new ExcelWriter(rspData, schemaSet, new String[] {service.getQName().getLocalPart(), operation.getName(), rspTypeName}));
-								tutu.visit(new ExcelWriter(rspData, schemaSet, new String[] {}, ExcelOptions.TAB));
+								//tutu.visit(new SchemaWalker(rspData, schemaSet, new String[] {service.getQName().getLocalPart(), operation.getName(), rspTypeName}));
+								tutu.visit(new SchemaWalker(rspData, schemaSet, new String[] {}, ExcelOptions.TAB));
 
 							} else {
 								System.err.println("NOT FOUND: " + rspTypeName);
@@ -346,7 +351,7 @@ public class WSDLBuilder {
 					}
 
 					try {
-						createExcel(
+						String fileUri=createExcel(
 								serviceInfo,
 								operation.getName(),
 								excelTitle,
@@ -355,8 +360,13 @@ public class WSDLBuilder {
 										
 								(String[][]) (rspData
 												.toArray(new String[rspData.size()][])),
-								storageService
+								s3StorageService
 										);
+						FileObj fObj=new FileObj();
+						fObj.setFilename(fileUri.substring(fileUri.lastIndexOf("/")+1));
+						fObj.setUri(fileUri);
+						
+						apiUriList.add(fObj);
 					} catch (IOException | ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -367,6 +377,8 @@ public class WSDLBuilder {
 
 		}
 
+		pr.setFileURIs(apiUriList);
+		return pr;
 	}
 
 	/**
@@ -586,8 +598,8 @@ public class WSDLBuilder {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public void createExcel(String serviceName, String operationName,
-			String[] titles, String[][] reqData, String[][] rspData, final StorageService storageService) throws IOException, ParseException {
+	public String createExcel(String serviceName, String operationName,
+			String[] titles, String[][] reqData, String[][] rspData, final S3BucketStorageService s3StorageService) throws IOException, ParseException {
 		Workbook wb = new XSSFWorkbook();
 
 		Map<String, CellStyle> styles = createStyles(wb, false);
@@ -612,12 +624,25 @@ public class WSDLBuilder {
 
 		// Write the output to a file
 		String fName = serviceName + "."+ operationName + ".xls"+(wb instanceof XSSFWorkbook? "x": "");
-		File file = storageService.getRootLocation().resolve(fName).toFile();
+		File file = s3StorageService.getRootLocation().resolve(fName).toFile();
 		//if (wb instanceof XSSFWorkbook)
 			//file += "x";
 		FileOutputStream out = new FileOutputStream(file);
 		wb.write(out);
 		out.close();
+		
+		//store the file on aws s3 bucket
+		String uri=s3StorageService.storeToS3Bucket(file);
+		
+		//delete the temprary file from webserver
+		try {
+			file.delete();
+		}
+		catch(Exception e) {
+			System.out.println("WSDLBuilder.createExcel()--unable to remove "+fName);
+		}
+		
+		return uri;
 	}
 	
 

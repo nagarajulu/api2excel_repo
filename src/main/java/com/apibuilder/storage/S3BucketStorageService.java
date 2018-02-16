@@ -1,8 +1,13 @@
 package com.apibuilder.storage;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -28,7 +33,19 @@ import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 
+@Service
 public class S3BucketStorageService {
+	 private final Path rootLocation;
+
+    @Autowired
+    public S3BucketStorageService(StorageProperties properties) {
+        this.rootLocation = Paths.get(properties.getLocation());
+    }
+	    
+    public Path getRootLocation() {
+    	return rootLocation;
+    }
+    
 	private static String bucketName     = "api2excel";
 	
 	/**

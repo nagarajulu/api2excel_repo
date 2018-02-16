@@ -42,9 +42,9 @@ public class FileSystemStorageService implements StorageService {
 			//Files.copy(new FileInputStream(file), targetFilePath,
             //       StandardCopyOption.REPLACE_EXISTING);
 			
-			S3BucketStorageService s3Bucket=new S3BucketStorageService();
+			//S3BucketStorageService s3Bucket=new S3BucketStorageService();
 			
-			uri=s3Bucket.storeToS3Bucket(file);
+			//uri=s3Bucket.storeToS3Bucket(file);
         }
         catch (Exception e) {
             throw new StorageException("Failed to store file " + file.getName(), e);

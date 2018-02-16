@@ -30,6 +30,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.apibuilder.storage.FileObj;
+import com.apibuilder.storage.S3BucketStorageService;
 import com.apibuilder.storage.StorageService;
 import com.apibuilder.util.ParseResult;
 import com.apibuilder.util.UIMessage;
@@ -63,7 +64,7 @@ public class JSONBuilder {
 	
 
 	@SuppressWarnings("unchecked")
-	public ParseResult parseJSONFile(String fileName, MultipartFile multipartFile, final StorageService storageService){
+	public ParseResult parseJSONFile(String fileName, MultipartFile multipartFile, final S3BucketStorageService s3StorageService){
 		final ParseResult pr=new ParseResult();
 		final ObjectMapper om = new ObjectMapper() ;
 		List<FileObj> apiUriList = new ArrayList<FileObj>();
@@ -222,7 +223,7 @@ public class JSONBuilder {
 												.toArray(new String[rspData.size()][])), 
 								(String[][]) (apiInfo
 										.toArray(new String[apiInfo.size()][])), 
-								storageService
+								s3StorageService
 										);
 						
 						FileObj fileNameUri=new FileObj();

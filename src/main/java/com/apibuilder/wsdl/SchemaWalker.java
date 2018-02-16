@@ -45,8 +45,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
-	public ExcelWriter(List<String[]> _out, XSSchemaSet schemaSet, String[] startPath, int tabstop) {
+public class SchemaWalker implements XSVisitor, XSSimpleTypeVisitor {
+	public SchemaWalker(List<String[]> _out, XSSchemaSet schemaSet, String[] startPath, int tabstop) {
 		this.out = _out;
 		this.schemaSet = schemaSet;
 		this.path = new ArrayList<>(Arrays.asList(startPath));
@@ -514,7 +514,7 @@ public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
         		ForeignAttributesImpl faImpl = (ForeignAttributesImpl)foreignAttrs.get(i);
             	prefix = getPrefix(faImpl);
             	
-            	System.out.println("ExcelWriter.getPrefixAll():"+prefix);
+            	System.out.println("SchemaWalker.getPrefixAll():"+prefix);
         	}
         	
         }
@@ -607,7 +607,7 @@ public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
 
 		if(type.getName()!=null && type.getName().equals("MSISDN")){
 			getPrefixAll(type);
-			System.out.println("ExcelWriter.elementDecl():"+key);
+			System.out.println("SchemaWalker.elementDecl():"+key);
 		}
 		
 		if (!alreadyProcessed.contains(key))
@@ -728,7 +728,7 @@ public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
 		part.getTerm().visit(new XSTermVisitor() {
 			public void elementDecl(XSElementDecl decl) {
 				if (decl.isLocal())
-					ExcelWriter.this.elementDecl(decl, extraAtts);
+					SchemaWalker.this.elementDecl(decl, extraAtts);
 				else {
 					//orig println(decl.getName());
 					
@@ -748,7 +748,7 @@ public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
 											
 							//println(decl.getName(), qualifiedName, "");
 
-							ExcelWriter.this.elementDecl(nestedDecl, extraAtts);  //FIXME recurseive forever!!!
+							SchemaWalker.this.elementDecl(nestedDecl, extraAtts);  //FIXME recurseive forever!!!
 					}
 					else
 					{
@@ -766,11 +766,11 @@ public class ExcelWriter implements XSVisitor, XSSimpleTypeVisitor {
 			}
 
 			public void modelGroup(XSModelGroup group) {
-				ExcelWriter.this.modelGroup(group, extraAtts);
+				SchemaWalker.this.modelGroup(group, extraAtts);
 			}
 
 			public void wildcard(XSWildcard wc) {
-				ExcelWriter.this.wildcard("any", wc, extraAtts);
+				SchemaWalker.this.wildcard("any", wc, extraAtts);
 			}
 		});
 	}

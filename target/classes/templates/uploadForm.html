@@ -21,7 +21,7 @@
 				<tr><td><h4>Please select one of APIs.</h4> </td><td></td></tr>
 				<tr><td><h4>1. WSDL (SOAP WebServices)</h4> </td><td></td></tr>
 				<tr><td><h4>2. JSON (Swaggers - RESTful APIs)</h4> </td><td></td></tr>
-				<tr><td><h4>File to upload:</h4></td><td><h4><input type="file" name="file" /></h4></td></tr>
+				<tr><td><h4>File to upload:</h4></td><td><h4><input type="file" name="file" multiple="multiple"/></h4></td></tr>
 				<tr><td></td><td><h4><input type="submit" value="Upload" /></h4></td></tr>
 			</table>
 		</form>
@@ -33,17 +33,16 @@
 	</div>
 	
 	<div th:if="${apiUriList}">
+	<ul>
+			<li th:each="fileObj : ${apiUriList}">
+				<a th:href="${fileObj.uri}" th:text="${fileObj.filename}" />
+			</li>
+		</ul>
 			<table>
 				 <!--  <tr th:each="apiUri : ${apiUriList}"><td th:text="${apiUri}">API Name</td></tr>-->
 			</table>
 	</div>
-	<div>
-		<ul>
-			<li th:each="file : ${files}">
-				<a th:href="${file.path}" th:text="${file.filename}" />
-			</li>
-		</ul>
-	</div>
+	
 
 </body>
 </html>

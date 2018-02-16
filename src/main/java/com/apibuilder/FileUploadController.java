@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.apibuilder.json.JSONBuilder;
 import com.apibuilder.storage.FileObj;
+import com.apibuilder.storage.S3BucketStorageService;
 import com.apibuilder.storage.StorageFileNotFoundException;
 import com.apibuilder.storage.StorageService;
 import com.apibuilder.util.ParseResult;
@@ -50,10 +51,12 @@ public class FileUploadController implements ErrorController {
     }
 
     private final StorageService storageService;
-
+    private final S3BucketStorageService s3StorageService;
+    
     @Autowired
-    public FileUploadController(StorageService storageService) {
+    public FileUploadController(StorageService storageService, S3BucketStorageService s3StorageService) {
         this.storageService = storageService;
+        this.s3StorageService = s3StorageService;
     }
 
     @GetMapping("/")
@@ -103,8 +106,9 @@ public class FileUploadController implements ErrorController {
     	if(file.getOriginalFilename().endsWith(".wsdl") || file.getContentType()=="text/xml") {
     		//API Builder source code
         	WSDLBuilder apiBuilder = new WSDLBuilder();
+        	ParseResult pr;
         	try {
-				apiBuilder.parseWSDL("", file, storageService);
+				pr=apiBuilder.parseWSDL("", file, s3StorageService);
 			} catch (WSDLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -127,12 +131,12 @@ public class FileUploadController implements ErrorController {
         	
         	//redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
     		redirectAttributes.addFlashAttribute("message", "WSDL file successfully uploaded "+file.getOriginalFilename() + " and APIs are generated for the operations. Please download below");
-    		
+    		redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
     	}
     	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
     		//API Builder source code
         	JSONBuilder apiBuilder = new JSONBuilder();
-        	ParseResult pr=apiBuilder.parseJSONFile("", file, storageService);    	
+        	ParseResult pr=apiBuilder.parseJSONFile("", file, s3StorageService);    	
         	//
             //storageService.store(file);
         	
