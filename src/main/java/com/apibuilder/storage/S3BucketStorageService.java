@@ -36,7 +36,8 @@ import com.amazonaws.services.s3.model.UploadPartRequest;
 @Service
 public class S3BucketStorageService {
 	 private final Path rootLocation;
-
+	 private final String USER_HOME=System.getProperty("user.home");
+	 
     @Autowired
     public S3BucketStorageService(StorageProperties properties) {
         this.rootLocation = Paths.get(properties.getLocation());
@@ -46,6 +47,9 @@ public class S3BucketStorageService {
     	return rootLocation;
     }
     
+    public String getUserHomeDirectory() {
+    	return USER_HOME;
+    }
 	private static String bucketName     = "api2excel";
 	
 	/**

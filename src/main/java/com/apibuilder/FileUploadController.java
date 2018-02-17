@@ -1,6 +1,9 @@
 package com.apibuilder;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -100,16 +103,15 @@ public class FileUploadController implements ErrorController {
     }
 
     @PostMapping("/")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+    public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
             RedirectAttributes redirectAttributes) {
 
-    	if(file.getOriginalFilename().endsWith(".wsdl") || file.getContentType()=="text/xml") {
-    		//API Builder source code
-        	WSDLBuilder apiBuilder = new WSDLBuilder();
-        	ParseResult pr;
-        	try {
-				pr=apiBuilder.parseWSDL("", file, s3StorageService);
-			} catch (WSDLException e) {
+    	//store uploaded files in temporary directory
+    	for(MultipartFile file : files) {
+    		File targetFile= new File(s3StorageService.getUserHomeDirectory(), file.getOriginalFilename());
+    		try {
+				file.transferTo(targetFile);
+			} catch (IllegalStateException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
@@ -120,34 +122,59 @@ public class FileUploadController implements ErrorController {
 				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
 				return "redirect:/error";
 			}
-        	catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
-				return "redirect:/error";
-			}
-        	//
-            //storageService.store(file);
-        	
-        	//redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
-    		redirectAttributes.addFlashAttribute("message", "WSDL file successfully uploaded "+file.getOriginalFilename() + " and APIs are generated for the operations. Please download below");
-    		redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
-    	}
-    	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
-    		//API Builder source code
-        	JSONBuilder apiBuilder = new JSONBuilder();
-        	ParseResult pr=apiBuilder.parseJSONFile("", file, s3StorageService);    	
-        	//
-            //storageService.store(file);
-        	
-        	redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
-        	redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
-    	}
-    	else {
-    		redirectAttributes.addFlashAttribute("message", "File uploaded by you "+file.getOriginalFilename()+" is not matching the supported formats: WSDL, Swagger(.JSON) ");
-    		return "redirect:/error";
     	}
     	
+    	for(MultipartFile file : files) {
+    		final Path fileUri = Paths.get(s3StorageService.getUserHomeDirectory(), file.getOriginalFilename());
+			File localFile=fileUri.toFile();
+	    	if(file.getOriginalFilename().endsWith(".wsdl") || file.getContentType()=="text/xml") {
+	    		//API Builder source code
+	        	WSDLBuilder apiBuilder = new WSDLBuilder();
+	        	ParseResult pr;
+	        	try {
+					pr=apiBuilder.parseWSDL(fileUri.toString(), localFile, s3StorageService);
+				} catch (WSDLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+					return "redirect:/error";
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+					return "redirect:/error";
+				}
+	        	catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+					return "redirect:/error";
+				}
+	        	//
+	            //storageService.store(file);
+	        	
+	        	//redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
+	    		redirectAttributes.addFlashAttribute("message", "WSDL file successfully uploaded "+file.getOriginalFilename() + " and APIs are generated for the operations. Please download below");
+	    		redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
+	    	}
+	    	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
+	    		//API Builder source code
+	        	JSONBuilder apiBuilder = new JSONBuilder();
+	        	ParseResult pr=apiBuilder.parseJSONFile(localFile, s3StorageService);    	
+	        	//
+	            //storageService.store(file);
+	        	
+	        	redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
+	        	redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
+	    	}
+	    	else if(file.getOriginalFilename().endsWith(".xsd")) {
+	    		continue;
+	    	}
+	    	else {
+	    		redirectAttributes.addFlashAttribute("message", "File uploaded by you "+file.getOriginalFilename()+" is not matching the supported formats: WSDL, Swagger(.JSON) ");
+	    		return "redirect:/error";
+	    	}
+    	}
 
         return "redirect:/";
     }

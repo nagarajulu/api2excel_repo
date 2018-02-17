@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -135,18 +136,19 @@ public class WSDLBuilder {
 	 * @throws WSDLException
 	 * @throws IOException 
 	 */
-	public ParseResult parseWSDL(String wsdlUri,  MultipartFile multipartFile, final S3BucketStorageService s3StorageService) throws WSDLException, IOException {
+	public ParseResult parseWSDL(String wsdlUri,  File localFile, final S3BucketStorageService s3StorageService) throws WSDLException, IOException {
 
 		System.out.println("\n\n=========== PARSING WSDL ====================");
 
-		//InputStream inputStream= new FileInputStream(file);
+		InputStream inputStream= new FileInputStream(localFile);
 		ParseResult pr=new ParseResult();
 		List<FileObj> apiUriList = new ArrayList<FileObj>();
 		
 		WSDLReader wsdlReader11 = WSDLFactory.newInstance().newWSDLReader();
-		Definition def = wsdlReader11.readWSDL(null, new InputSource(multipartFile.getInputStream()));
 		wsdlReader11.setFeature("javax.wsdl.verbose", true);
 		wsdlReader11.setFeature("javax.wsdl.importDocuments", true);
+		Definition def = wsdlReader11.readWSDL(wsdlUri, new InputSource(inputStream));
+		
 
 		System.out.println("\n\n======= PARSING INCLUDES SCHEMA =============");
 

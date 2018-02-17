@@ -64,14 +64,15 @@ public class JSONBuilder {
 	
 
 	@SuppressWarnings("unchecked")
-	public ParseResult parseJSONFile(String fileName, MultipartFile multipartFile, final S3BucketStorageService s3StorageService){
+	public ParseResult parseJSONFile(File localFile, final S3BucketStorageService s3StorageService){
 		final ParseResult pr=new ParseResult();
 		final ObjectMapper om = new ObjectMapper() ;
 		List<FileObj> apiUriList = new ArrayList<FileObj>();
 		
 		try {
 			//final File jsonFileName = new File (fileName);
-			final JsonNode inputDoc = om.readTree(multipartFile.getInputStream());
+			InputStream inputStream= new FileInputStream(localFile);
+			final JsonNode inputDoc = om.readTree(inputStream);
 			//pretty(inputDoc);
 			
 			final String[] reqExcelTitle = { "Parameter Type", "Parameter Name", "DataType", "Cardinality", 
@@ -208,7 +209,7 @@ public class JSONBuilder {
 					//Create Excel for each operation
 					try {
 						final String operationName = pathName.substring(pathName.indexOf("/")+1);
-						final String serviceName = multipartFile.getOriginalFilename().replaceAll(".json", "");
+						final String serviceName = localFile.getName().replaceAll(".json", "");
 						System.out.println("generating file..."+serviceName);
 						String uri=ExcelUtil.createExcel(
 								serviceName,
@@ -246,7 +247,7 @@ public class JSONBuilder {
 			
 			UIMessage uiMsg=new UIMessage();
 			uiMsg.setMessageType(MESSAGETYPE.INFO);
-			uiMsg.setMessage("Your swagger " + multipartFile.getOriginalFilename() + " is successfully parsed ! Please download your API documents below.");
+			uiMsg.setMessage("Your swagger " + localFile.getName() + " is successfully parsed ! Please download your API documents below.");
 			
 			pr.setUiMsg(uiMsg);
 			pr.setFileURIs(apiUriList);
@@ -256,7 +257,7 @@ public class JSONBuilder {
 			//e.printStackTrace();
 			UIMessage uiMsg=new UIMessage();
 			uiMsg.setMessageType(MESSAGETYPE.ERROR);
-			uiMsg.setMessage("Error parsing the swagger file - "+multipartFile.getOriginalFilename());
+			uiMsg.setMessage("Error parsing the swagger file - "+localFile.getName());
 			
 			pr.setUiMsg(uiMsg);
 		}
