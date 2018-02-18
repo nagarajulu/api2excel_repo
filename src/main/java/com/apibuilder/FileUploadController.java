@@ -2,10 +2,12 @@ package com.apibuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.wsdl.WSDLException;
@@ -106,9 +108,16 @@ public class FileUploadController implements ErrorController {
     public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
             RedirectAttributes redirectAttributes) {
 
+    	Path tempDirPath=Paths.get(s3StorageService.getUserHomeDirectory(), UUID.randomUUID().toString());
+    	try {
+			Files.createDirectory(tempDirPath);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     	//store uploaded files in temporary directory
     	for(MultipartFile file : files) {
-    		File targetFile= new File(s3StorageService.getUserHomeDirectory(), file.getOriginalFilename());
+    		File targetFile= new File(tempDirPath.toString(), file.getOriginalFilename());
     		try {
 				file.transferTo(targetFile);
 			} catch (IllegalStateException e) {
@@ -125,7 +134,7 @@ public class FileUploadController implements ErrorController {
     	}
     	
     	for(MultipartFile file : files) {
-    		final Path fileUri = Paths.get(s3StorageService.getUserHomeDirectory(), file.getOriginalFilename());
+    		final Path fileUri = Paths.get(tempDirPath.toString(), file.getOriginalFilename());
 			File localFile=fileUri.toFile();
 	    	if(file.getOriginalFilename().endsWith(".wsdl") || file.getContentType()=="text/xml") {
 	    		//API Builder source code
@@ -133,6 +142,12 @@ public class FileUploadController implements ErrorController {
 	        	ParseResult pr;
 	        	try {
 					pr=apiBuilder.parseWSDL(fileUri.toString(), localFile, s3StorageService);
+					//clean up temp directory
+					File[] dirFiles=tempDirPath.toFile().listFiles();
+					for (File dirFile : dirFiles) {
+			           dirFile.delete();
+			        }
+					tempDirPath.toFile().delete();
 				} catch (WSDLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -163,7 +178,12 @@ public class FileUploadController implements ErrorController {
 	        	ParseResult pr=apiBuilder.parseJSONFile(localFile, s3StorageService);    	
 	        	//
 	            //storageService.store(file);
-	        	
+	        	//clean up temp directory
+				File[] dirFiles=tempDirPath.toFile().listFiles();
+				for (File dirFile : dirFiles) {
+		           dirFile.delete();
+		        }
+				tempDirPath.toFile().delete();
 	        	redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
 	        	redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
 	    	}
