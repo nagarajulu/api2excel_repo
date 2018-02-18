@@ -101,11 +101,8 @@ public class S3BucketStorageService {
             /*s3Client.putObject(new PutObjectRequest(
             		                 bucketName, keyName, file));*/
             
-            //upload file to s3
-            uploadFileToS3Bucket(file, s3Client);
-            
-            //get the url of file from s3 bucket
-            url=s3Client.getUrl(bucketName, file.getName()).toString();
+            //upload file to s3 and get the url of file from s3 bucket
+            url=uploadFileToS3Bucket(file, s3Client);
             
             System.out.println("S3BucketStorageService.storeToS3Bucket():"+url);
 
@@ -211,18 +208,28 @@ public class S3BucketStorageService {
 	}
 	
 	/**
-	 * Uploads file to S3 bucket
+	 * Uploads file to S3 bucket and returns URL to it
 	 * @param file
 	 * @param s3Client
+	 * @return
 	 */
-	private void uploadFileToS3Bucket(File file, AmazonS3 s3Client) {
+	private String uploadFileToS3Bucket(File file, AmazonS3 s3Client) {
+		
+		String returnUrl=null;
+		
+		//Read the file parent directory
+		final String requestUuidDir=file.getParentFile().getName();
+		
+		System.out.println("S3BucketStorageService.uploadFileToS3Bucket():"+requestUuidDir);
+		
+		final String fileKey=requestUuidDir+"/"+file.getName();
 		// Create a list of UploadPartResponse objects. You get one of these
         // for each part upload.
         List<PartETag> partETags = new ArrayList<PartETag>();
 
         // Step 1: Initialize.
         InitiateMultipartUploadRequest initRequest = new 
-             InitiateMultipartUploadRequest(bucketName, file.getName());
+             InitiateMultipartUploadRequest(bucketName, fileKey);
         InitiateMultipartUploadResult initResponse = 
         	                   s3Client.initiateMultipartUpload(initRequest);
 
@@ -238,7 +245,7 @@ public class S3BucketStorageService {
             	
                 // Create request to upload a part.
                 UploadPartRequest uploadRequest = new UploadPartRequest()
-                    .withBucketName(bucketName).withKey(file.getName())
+                    .withBucketName(bucketName).withKey(fileKey)
                     .withUploadId(initResponse.getUploadId()).withPartNumber(i)
                     .withFileOffset(filePosition)
                     .withFile(file)
@@ -255,18 +262,21 @@ public class S3BucketStorageService {
             CompleteMultipartUploadRequest compRequest = new 
                          CompleteMultipartUploadRequest(
                                     bucketName, 
-                                    file.getName(), 
+                                    fileKey, 
                                     initResponse.getUploadId(), 
                                     partETags);
 
             
             s3Client.completeMultipartUpload(compRequest);
+            
+            returnUrl=s3Client.getUrl(bucketName, fileKey).toString();
         } catch (Exception e) {
             s3Client.abortMultipartUpload(new AbortMultipartUploadRequest(
-                    bucketName, file.getName(), initResponse.getUploadId()));
+                    bucketName, fileKey, initResponse.getUploadId()));
             System.out.println("S3BucketStorageService.storeToS3Bucket()--ERROR ABORTING");
             throw e;
         }
+        return returnUrl;
 	}
 	
 }

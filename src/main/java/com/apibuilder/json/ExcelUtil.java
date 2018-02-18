@@ -119,7 +119,7 @@ public class ExcelUtil {
 	public static String createExcel(String serviceName, String operationName,
 			String[] reqTitles, String[] respTitles, String[] apiInfoTitles,
 			String[][] reqData, String[][] rspData, String[][] apiInfoData, 
-			final S3BucketStorageService s3StorageService) throws IOException, ParseException {
+			final S3BucketStorageService s3StorageService, Path tempDir) throws IOException, ParseException {
 		Workbook wb = new XSSFWorkbook();
 
 		Map<String, CellStyle> styles = createStyles(wb, false);
@@ -146,23 +146,15 @@ public class ExcelUtil {
 
 		// Write the output to a file
 		String fName = serviceName + "."+ operationName + ".xls"+(wb instanceof XSSFWorkbook? "x": "");
-		File file = s3StorageService.getRootLocation().resolve(fName).toFile();
+		File file = new File(tempDir.toString(), fName);
 		//if (wb instanceof XSSFWorkbook)
 			//file += "x";
 		FileOutputStream out = new FileOutputStream(file);
 		wb.write(out);
 		out.close();
 		
-		
 		String uri=s3StorageService.storeToS3Bucket(file);
 		
-		//delete the temprary file from webserver
-		try {
-			file.delete();
-		}
-		catch(Exception e) {
-			System.out.println("WSDLBuilder.createExcel()--unable to remove "+fName);
-		}
 		return uri;
 		
 	}

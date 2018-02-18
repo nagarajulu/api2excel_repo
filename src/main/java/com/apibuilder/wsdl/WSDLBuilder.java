@@ -136,7 +136,7 @@ public class WSDLBuilder {
 	 * @throws WSDLException
 	 * @throws IOException 
 	 */
-	public ParseResult parseWSDL(String wsdlUri,  File localFile, final S3BucketStorageService s3StorageService) throws WSDLException, IOException {
+	public ParseResult parseWSDL(String wsdlUri,  File localFile, final S3BucketStorageService s3StorageService, Path tempDir) throws WSDLException, IOException {
 
 		System.out.println("\n\n=========== PARSING WSDL ====================");
 
@@ -362,8 +362,8 @@ public class WSDLBuilder {
 										
 								(String[][]) (rspData
 												.toArray(new String[rspData.size()][])),
-								s3StorageService
-										);
+								s3StorageService,
+								tempDir);
 						FileObj fObj=new FileObj();
 						fObj.setFilename(fileUri.substring(fileUri.lastIndexOf("/")+1));
 						fObj.setUri(fileUri);
@@ -601,7 +601,8 @@ public class WSDLBuilder {
 	 * @throws ParseException
 	 */
 	public String createExcel(String serviceName, String operationName,
-			String[] titles, String[][] reqData, String[][] rspData, final S3BucketStorageService s3StorageService) throws IOException, ParseException {
+			String[] titles, String[][] reqData, String[][] rspData, 
+			final S3BucketStorageService s3StorageService, Path tempDir) throws IOException, ParseException {
 		Workbook wb = new XSSFWorkbook();
 
 		Map<String, CellStyle> styles = createStyles(wb, false);
@@ -626,7 +627,7 @@ public class WSDLBuilder {
 
 		// Write the output to a file
 		String fName = serviceName + "."+ operationName + ".xls"+(wb instanceof XSSFWorkbook? "x": "");
-		File file = s3StorageService.getRootLocation().resolve(fName).toFile();
+		File file = new File(tempDir.toString(), fName);
 		//if (wb instanceof XSSFWorkbook)
 			//file += "x";
 		FileOutputStream out = new FileOutputStream(file);

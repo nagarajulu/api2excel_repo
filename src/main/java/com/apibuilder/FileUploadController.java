@@ -108,7 +108,8 @@ public class FileUploadController implements ErrorController {
     public String handleFileUpload(@RequestParam("file") MultipartFile[] files,
             RedirectAttributes redirectAttributes) {
 
-    	Path tempDirPath=Paths.get(s3StorageService.getUserHomeDirectory(), UUID.randomUUID().toString());
+    	final String requestUuid = UUID.randomUUID().toString();
+		Path tempDirPath=Paths.get(s3StorageService.getUserHomeDirectory(), requestUuid);
     	try {
 			Files.createDirectory(tempDirPath);
 		} catch (IOException e1) {
@@ -141,7 +142,7 @@ public class FileUploadController implements ErrorController {
 	        	WSDLBuilder apiBuilder = new WSDLBuilder();
 	        	ParseResult pr;
 	        	try {
-					pr=apiBuilder.parseWSDL(fileUri.toString(), localFile, s3StorageService);
+					pr=apiBuilder.parseWSDL(fileUri.toString(), localFile, s3StorageService, tempDirPath);
 					//clean up temp directory
 					File[] dirFiles=tempDirPath.toFile().listFiles();
 					for (File dirFile : dirFiles) {
@@ -175,7 +176,7 @@ public class FileUploadController implements ErrorController {
 	    	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
 	    		//API Builder source code
 	        	JSONBuilder apiBuilder = new JSONBuilder();
-	        	ParseResult pr=apiBuilder.parseJSONFile(localFile, s3StorageService);    	
+	        	ParseResult pr=apiBuilder.parseJSONFile(localFile, s3StorageService, tempDirPath);    	
 	        	//
 	            //storageService.store(file);
 	        	//clean up temp directory

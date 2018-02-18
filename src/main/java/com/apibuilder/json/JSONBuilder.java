@@ -64,7 +64,7 @@ public class JSONBuilder {
 	
 
 	@SuppressWarnings("unchecked")
-	public ParseResult parseJSONFile(File localFile, final S3BucketStorageService s3StorageService){
+	public ParseResult parseJSONFile(File localFile, final S3BucketStorageService s3StorageService, Path tempDir){
 		final ParseResult pr=new ParseResult();
 		final ObjectMapper om = new ObjectMapper() ;
 		List<FileObj> apiUriList = new ArrayList<FileObj>();
@@ -224,8 +224,8 @@ public class JSONBuilder {
 												.toArray(new String[rspData.size()][])), 
 								(String[][]) (apiInfo
 										.toArray(new String[apiInfo.size()][])), 
-								s3StorageService
-										);
+								s3StorageService,
+								 tempDir);
 						
 						FileObj fileNameUri=new FileObj();
 						fileNameUri.setFilename(uri.substring(uri.lastIndexOf("/")+1));
