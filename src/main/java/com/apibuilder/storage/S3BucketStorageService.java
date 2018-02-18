@@ -3,16 +3,19 @@ package com.apibuilder.storage;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.policy.Policy;
 import com.amazonaws.auth.policy.Principal;
 import com.amazonaws.auth.policy.Statement;
@@ -24,6 +27,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AbortMultipartUploadRequest;
+import com.amazonaws.services.s3.model.BucketLifecycleConfiguration;
+import com.amazonaws.services.s3.model.BucketLifecycleConfiguration.Rule;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
@@ -35,8 +40,8 @@ import com.amazonaws.services.s3.model.UploadPartRequest;
 
 @Service
 public class S3BucketStorageService {
-	 private final Path rootLocation;
-	 private final String USER_HOME=System.getProperty("user.home");
+	private final Path rootLocation;
+	private final String USER_HOME=System.getProperty("user.home");
 	 
     @Autowired
     public S3BucketStorageService(StorageProperties properties) {
@@ -84,6 +89,9 @@ public class S3BucketStorageService {
     		//set public read access for all files within bucket, so users can download API documents.
     		grantPublicReadAccess(s3Client);
     		
+    		//update bucket lifecycle configuration with file expiration date within 1 day
+    		setLifeCycleConfiguration(s3Client);
+    		
             // Get location.
             String bucketLocation = s3Client.getBucketLocation(new GetBucketLocationRequest(bucketName));
             System.out.println("bucket location = " + bucketLocation);
@@ -93,60 +101,10 @@ public class S3BucketStorageService {
             /*s3Client.putObject(new PutObjectRequest(
             		                 bucketName, keyName, file));*/
             
-         // Create a list of UploadPartResponse objects. You get one of these
-            // for each part upload.
-            List<PartETag> partETags = new ArrayList<PartETag>();
-
-            // Step 1: Initialize.
-            InitiateMultipartUploadRequest initRequest = new 
-                 InitiateMultipartUploadRequest(bucketName, file.getName());
-            InitiateMultipartUploadResult initResponse = 
-            	                   s3Client.initiateMultipartUpload(initRequest);
-
-            long contentLength = file.length();
-            long partSize = 5242880; // Set part size to 5 MB.
-
-            try {
-                // Step 2: Upload parts.
-                long filePosition = 0;
-                for (int i = 1; filePosition < contentLength; i++) {
-                    // Last part can be less than 5 MB. Adjust part size.
-                	partSize = Math.min(partSize, (contentLength - filePosition));
-                	
-                    // Create request to upload a part.
-                    UploadPartRequest uploadRequest = new UploadPartRequest()
-                        .withBucketName(bucketName).withKey(file.getName())
-                        .withUploadId(initResponse.getUploadId()).withPartNumber(i)
-                        .withFileOffset(filePosition)
-                        .withFile(file)
-                        .withPartSize(partSize);
-
-                    // Upload part and add response to our list.
-                    partETags.add(
-                    		s3Client.uploadPart(uploadRequest).getPartETag());
-
-                    filePosition += partSize;
-                }
-
-                // Step 3: Complete.
-                CompleteMultipartUploadRequest compRequest = new 
-                             CompleteMultipartUploadRequest(
-                                        bucketName, 
-                                        file.getName(), 
-                                        initResponse.getUploadId(), 
-                                        partETags);
-
-                
-                s3Client.completeMultipartUpload(compRequest);
-            } catch (Exception e) {
-                s3Client.abortMultipartUpload(new AbortMultipartUploadRequest(
-                        bucketName, file.getName(), initResponse.getUploadId()));
-                System.out.println("S3BucketStorageService.storeToS3Bucket()--ERROR ABORTING");
-                throw e;
-            }
+            //upload file to s3
+            uploadFileToS3Bucket(file, s3Client);
             
-            
-            
+            //get the url of file from s3 bucket
             url=s3Client.getUrl(bucketName, file.getName()).toString();
             
             System.out.println("S3BucketStorageService.storeToS3Bucket():"+url);
@@ -168,12 +126,19 @@ public class S3BucketStorageService {
                     "communicate with S3, " +
                     "such as not being able to access the network.");
             System.out.println("Error Message: " + ace.getMessage());
-        }
+        } catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         return url;
 	}//end of method
 
 	
-	void grantPublicReadAccess(AmazonS3 s3Client) {
+	/**
+	 * Grant public read access to AWS S3 bucket
+	 * @param s3Client
+	 */
+	private void grantPublicReadAccess(AmazonS3 s3Client) {
 		Statement allowPublicReadStatement = new Statement(Effect.Allow)
 			    .withPrincipals(Principal.AllUsers)
 			    .withActions(S3Actions.GetObject)
@@ -183,6 +148,125 @@ public class S3BucketStorageService {
 			    .withStatements(allowPublicReadStatement);
 		
 		s3Client.setBucketPolicy(bucketName, policy.toJson());
+	}
+	
+	/**
+	 * Gets the current bucket lifecycle configuration, if not create it
+	 * And create/update rule with file expiration within same day.
+	 * @param s3Client
+	 * @throws ParseException
+	 */
+	private void setLifeCycleConfiguration(AmazonS3 s3Client) throws ParseException {
+		//Retrieve the current bucket lifecycle configuration
+		BucketLifecycleConfiguration lifeCycleConfig=s3Client.getBucketLifecycleConfiguration(bucketName);
+		
+		if(lifeCycleConfig==null) {
+			lifeCycleConfig=new BucketLifecycleConfiguration();
+		}
+		List<BucketLifecycleConfiguration.Rule> rules = lifeCycleConfig.getRules();
+		
+		if(rules==null) {
+			rules=new ArrayList<BucketLifecycleConfiguration.Rule>();
+		}
+		//set the new rule with expiration
+		
+		Date dt = new Date();
+		Calendar c = Calendar.getInstance(); 
+		c.setTime(dt); 
+		c.add(Calendar.DATE, 1);
+		dt = c.getTime();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date today=sdf.parse(sdf.format(dt));
+		System.out.println("S3BucketStorageService.storeToS3Bucket():"+today);
+		
+		boolean ruleExists=false;
+		for(Rule rule:rules) {
+			if(rule.getId().equals("FileAutoExpirationRule")) {
+				ruleExists=true;
+			}
+		}
+		if(ruleExists) {
+			for(Rule rule:rules) {
+    			if(rule.getId().equals("FileAutoExpirationRule")) {
+    				rule.setExpirationDate(today);
+    				rule.setStatus(BucketLifecycleConfiguration.ENABLED.toString());
+    			}
+    		}
+			
+		}
+		else {
+			rules.add(new BucketLifecycleConfiguration.Rule()
+    				.withId("FileAutoExpirationRule")
+    				//.withExpirationDate(today)
+    				.withExpirationInDays(1)
+    				.withStatus(BucketLifecycleConfiguration.ENABLED.toString()));
+		}
+		
+		
+		lifeCycleConfig.setRules(rules);
+		
+		s3Client.setBucketLifecycleConfiguration(bucketName, lifeCycleConfig);
+	}
+	
+	/**
+	 * Uploads file to S3 bucket
+	 * @param file
+	 * @param s3Client
+	 */
+	private void uploadFileToS3Bucket(File file, AmazonS3 s3Client) {
+		// Create a list of UploadPartResponse objects. You get one of these
+        // for each part upload.
+        List<PartETag> partETags = new ArrayList<PartETag>();
+
+        // Step 1: Initialize.
+        InitiateMultipartUploadRequest initRequest = new 
+             InitiateMultipartUploadRequest(bucketName, file.getName());
+        InitiateMultipartUploadResult initResponse = 
+        	                   s3Client.initiateMultipartUpload(initRequest);
+
+        long contentLength = file.length();
+        long partSize = 5242880; // Set part size to 5 MB.
+
+        try {
+            // Step 2: Upload parts.
+            long filePosition = 0;
+            for (int i = 1; filePosition < contentLength; i++) {
+                // Last part can be less than 5 MB. Adjust part size.
+            	partSize = Math.min(partSize, (contentLength - filePosition));
+            	
+                // Create request to upload a part.
+                UploadPartRequest uploadRequest = new UploadPartRequest()
+                    .withBucketName(bucketName).withKey(file.getName())
+                    .withUploadId(initResponse.getUploadId()).withPartNumber(i)
+                    .withFileOffset(filePosition)
+                    .withFile(file)
+                    .withPartSize(partSize);
+
+                // Upload part and add response to our list.
+                partETags.add(
+                		s3Client.uploadPart(uploadRequest).getPartETag());
+
+                filePosition += partSize;
+            }
+
+            // Step 3: Complete.
+            CompleteMultipartUploadRequest compRequest = new 
+                         CompleteMultipartUploadRequest(
+                                    bucketName, 
+                                    file.getName(), 
+                                    initResponse.getUploadId(), 
+                                    partETags);
+
+            
+            s3Client.completeMultipartUpload(compRequest);
+        } catch (Exception e) {
+            s3Client.abortMultipartUpload(new AbortMultipartUploadRequest(
+                    bucketName, file.getName(), initResponse.getUploadId()));
+            System.out.println("S3BucketStorageService.storeToS3Bucket()--ERROR ABORTING");
+            throw e;
+        }
 	}
 	
 }
