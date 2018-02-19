@@ -3,8 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.apibuilder</groupId>
-    <artifactId>swagger-apibuilder</artifactId>
+    <groupId>com.api2excel</groupId>
     <version>0.1.0</version>
 
     <parent>
@@ -93,4 +92,5 @@
         </plugins>
     </build>
 
+    <artifactId>api2excel</artifactId>
 </project>
