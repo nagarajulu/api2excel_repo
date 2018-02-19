@@ -580,12 +580,12 @@ public class WSDLBuilder {
 		
 		// set column widths, the width is measured in units of 1/256th of a
 		// character width
-		sheet.setColumnWidth(0, 256 * 50);
-		sheet.setColumnWidth(1, 256 * 50);
-		sheet.setColumnWidth(2, 256 * 50);
-		sheet.setColumnWidth(3, 256 * 50);
-		sheet.setColumnWidth(4, 256 * 50);
-		sheet.setColumnWidth(5, 256 * 50);
+		sheet.setColumnWidth(0, 256 * 50); //Field name
+		sheet.setColumnWidth(1, 256 * 25); //Data type
+		sheet.setColumnWidth(2, 256 * 15); //Cardinality
+		sheet.setColumnWidth(3, 256 * 50); //Description
+		sheet.setColumnWidth(4, 256 * 80); //Xpath
+		sheet.setColumnWidth(5, 256 * 30); //Additional attr
 		// sheet.setZoom(3, 4);
 		
 		return sheet;
