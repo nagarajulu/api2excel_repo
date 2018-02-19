@@ -128,7 +128,7 @@ public class SchemaWalker implements XSVisitor, XSSimpleTypeVisitor {
 	public void dumpAttributeGroupRef(XSAttGroupDecl decl) {
 //		println(MessageFormat.format("<attGroup ref=\"'{'{0}'}'{1}\"/>",
 //				decl.getTargetNamespace(), decl.getName()));
-		System.out.println("THIS IS A REF + " + decl.getName());
+		//System.out.println("THIS IS A REF + " + decl.getName());
 		println("","",decl.getName(), "", "", "");
 	}
 
@@ -514,7 +514,7 @@ public class SchemaWalker implements XSVisitor, XSSimpleTypeVisitor {
         		ForeignAttributesImpl faImpl = (ForeignAttributesImpl)foreignAttrs.get(i);
             	prefix = getPrefix(faImpl);
             	
-            	System.out.println("SchemaWalker.getPrefixAll():"+prefix);
+            	//System.out.println("SchemaWalker.getPrefixAll():"+prefix);
         	}
         	
         }
@@ -607,7 +607,7 @@ public class SchemaWalker implements XSVisitor, XSSimpleTypeVisitor {
 
 		if(type.getName()!=null && type.getName().equals("MSISDN")){
 			getPrefixAll(type);
-			System.out.println("SchemaWalker.elementDecl():"+key);
+			//System.out.println("SchemaWalker.elementDecl():"+key);
 		}
 		
 		if (!alreadyProcessed.contains(key))
