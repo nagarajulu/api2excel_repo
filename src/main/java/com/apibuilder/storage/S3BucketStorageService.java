@@ -61,8 +61,9 @@ public class S3BucketStorageService {
 	 * Stores file in S3 buckets and returns URL associated to it.
 	 * @param file
 	 * @return
+	 * @throws Exception 
 	 */
-	public String storeToS3Bucket(File file) {
+	public String storeToS3Bucket(File file) throws Exception {
 		String url=null;
 		
 		
@@ -116,6 +117,7 @@ public class S3BucketStorageService {
             System.out.println("AWS Error Code:   " + ase.getErrorCode());
             System.out.println("Error Type:       " + ase.getErrorType());
             System.out.println("Request ID:       " + ase.getRequestId());
+            throw ase;
         } catch (AmazonClientException ace) {
             System.out.println("Caught an AmazonClientException, which " +
             		"means the client encountered " +
@@ -123,9 +125,11 @@ public class S3BucketStorageService {
                     "communicate with S3, " +
                     "such as not being able to access the network.");
             System.out.println("Error Message: " + ace.getMessage());
+            throw ace;
         } catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			throw e1;
 		}
         return url;
 	}//end of method

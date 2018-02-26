@@ -113,13 +113,12 @@ public class ExcelUtil {
 	 * @param reqData
 	 * @param rspData
 	 * @param bldOptipons
-	 * @throws IOException
-	 * @throws ParseException
+	 * @throws Exception 
 	 */
 	public static String createExcel(String serviceName, String operationName,
 			String[] reqTitles, String[] respTitles, String[] apiInfoTitles,
 			String[][] reqData, String[][] rspData, String[][] apiInfoData, 
-			final S3BucketStorageService s3StorageService, Path tempDir) throws IOException, ParseException {
+			final S3BucketStorageService s3StorageService, Path tempDir) throws Exception {
 		Workbook wb = new XSSFWorkbook();
 
 		Map<String, CellStyle> styles = createStyles(wb, false);

@@ -43,11 +43,12 @@ import com.apibuilder.wsdl.WSDLBuilder;
 public class FileUploadController implements ErrorController {
 	
 	private static final String PATH = "/error";
+	private static final String HOME_PATH="redirect:/#services";
 
     @RequestMapping(value = PATH)
     public String error(Model model, RedirectAttributes redirectAttributes) {
     	
-		return "uploadForm";
+		return "index.html#services";
     }
 
     @Override
@@ -65,43 +66,9 @@ public class FileUploadController implements ErrorController {
     }
 
     @GetMapping("/")
-    public String listUploadedFiles(Model model) throws IOException {
+    public String returnHome(Model model) throws IOException {
     	
-    	List<String> paths=storageService.loadAll().map(
-                path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-                        "serveFile", path.getFileName().toString()).build().toString())
-                .collect(Collectors.toList());
-    	
-    	List<FileObj> filesList=new ArrayList<FileObj>();
-    	
-    	for(String path: paths) {
-    		FileObj f=new FileObj();
-    		f.setFilename(path.substring(path.lastIndexOf("/")+1));
-    		f.setUri(path);
-    		filesList.add(f);
-    	}
-
-        model.addAttribute("files", filesList);
-
-        return "uploadForm";
-    }
-
-   // @GetMapping("/error")
-    //@ExceptionHandler(FileSizeLimitExceededException.class)
-    public String handleError(Model model) throws IOException {
-    	
-    	//model.addAttribute("message", " FILE SIZE EXCEEDED or OTHER ERROR OCCURRED.");
-    	
-		return "uploadForm";    	
-    }
-    
-    @GetMapping("/files/{filename:.+}")
-    @ResponseBody
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-
-        Resource file = storageService.loadAsResource(filename);
-        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+        return "index.html";
     }
 
     @PostMapping("/")
@@ -115,6 +82,8 @@ public class FileUploadController implements ErrorController {
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED. ");
+			return HOME_PATH;
 		}
     	//store uploaded files in temporary directory
     	for(MultipartFile file : files) {
@@ -125,12 +94,12 @@ public class FileUploadController implements ErrorController {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
-				return "redirect:/error";
+				return HOME_PATH;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
-				return "redirect:/error";
+				return HOME_PATH;
 			}
     	}
     	
@@ -153,51 +122,59 @@ public class FileUploadController implements ErrorController {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
-					return "redirect:/error";
+					return HOME_PATH;
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
-					return "redirect:/error";
+					return HOME_PATH;
 				}
 	        	catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
-					return "redirect:/error";
+					return HOME_PATH;
 				}
 	        	//
 	            //storageService.store(file);
 	        	
 	        	//redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
-	    		redirectAttributes.addFlashAttribute("message", "WSDL file successfully uploaded "+file.getOriginalFilename() + " and APIs are generated for the operations. Please download below");
+	    		redirectAttributes.addFlashAttribute("successMsg", "WSDL file successfully uploaded "+file.getOriginalFilename() + " and APIs are generated for the operations. Please download below");
 	    		redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
 	    	}
 	    	else if(file.getOriginalFilename().endsWith(".json") || file.getContentType()=="application/json") {
 	    		//API Builder source code
-	        	JSONBuilder apiBuilder = new JSONBuilder();
-	        	ParseResult pr=apiBuilder.parseJSONFile(localFile, s3StorageService, tempDirPath);    	
-	        	//
-	            //storageService.store(file);
-	        	//clean up temp directory
-				File[] dirFiles=tempDirPath.toFile().listFiles();
-				for (File dirFile : dirFiles) {
-		           dirFile.delete();
-		        }
-				tempDirPath.toFile().delete();
-	        	redirectAttributes.addFlashAttribute("message", pr.getUiMsg().getMessage());
-	        	redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
+	        	JSONBuilder apiBuilder  = new JSONBuilder();
+	        	try {
+	        		ParseResult pr=apiBuilder.parseJSONFile(localFile, s3StorageService, tempDirPath);    
+	        		
+	        		redirectAttributes.addFlashAttribute("successMsg", pr.getUiMsg().getMessage());
+		        	redirectAttributes.addFlashAttribute("apiUriList", pr.getFileURIs());
+		        	//
+		            //storageService.store(file);
+		        	//clean up temp directory
+					File[] dirFiles=tempDirPath.toFile().listFiles();
+					for (File dirFile : dirFiles) {
+			           dirFile.delete();
+			        }
+					tempDirPath.toFile().delete();
+	        	}
+	        	catch(Exception e){
+	        		e.printStackTrace();
+	        		redirectAttributes.addFlashAttribute("message", "ERROR OCCURRED IN PARSING "+file.getOriginalFilename());
+					return HOME_PATH;
+	        	}
 	    	}
 	    	else if(file.getOriginalFilename().endsWith(".xsd")) {
 	    		continue;
 	    	}
 	    	else {
 	    		redirectAttributes.addFlashAttribute("message", "File uploaded by you "+file.getOriginalFilename()+" is not matching the supported formats: WSDL, Swagger(.JSON) ");
-	    		return "redirect:/error";
+	    		return HOME_PATH;
 	    	}
     	}
 
-        return "redirect:/";
+        return HOME_PATH;
     }
 
     @ExceptionHandler(StorageFileNotFoundException.class)

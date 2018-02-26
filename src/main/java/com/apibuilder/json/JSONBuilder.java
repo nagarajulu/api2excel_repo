@@ -64,7 +64,7 @@ public class JSONBuilder {
 	
 
 	@SuppressWarnings("unchecked")
-	public ParseResult parseJSONFile(File localFile, final S3BucketStorageService s3StorageService, Path tempDir){
+	public ParseResult parseJSONFile(File localFile, final S3BucketStorageService s3StorageService, Path tempDir) throws Exception{
 		final ParseResult pr=new ParseResult();
 		final ObjectMapper om = new ObjectMapper() ;
 		List<FileObj> apiUriList = new ArrayList<FileObj>();
@@ -234,6 +234,7 @@ public class JSONBuilder {
 					} catch (IOException | ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						throw e;
 					}
 					
 				} //end of operation loop
@@ -255,11 +256,7 @@ public class JSONBuilder {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-			UIMessage uiMsg=new UIMessage();
-			uiMsg.setMessageType(MESSAGETYPE.ERROR);
-			uiMsg.setMessage("Error parsing the swagger file - "+localFile.getName());
-			
-			pr.setUiMsg(uiMsg);
+			throw e;
 		}
 		return pr;
 	}

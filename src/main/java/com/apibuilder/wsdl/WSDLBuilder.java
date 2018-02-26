@@ -133,10 +133,9 @@ public class WSDLBuilder {
 	/**
 	 * 
 	 * @param wsdlUri
-	 * @throws WSDLException
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	public ParseResult parseWSDL(String wsdlUri,  File localFile, final S3BucketStorageService s3StorageService, Path tempDir) throws WSDLException, IOException {
+	public ParseResult parseWSDL(String wsdlUri,  File localFile, final S3BucketStorageService s3StorageService, Path tempDir) throws Exception {
 
 		System.out.println("\n\n=========== PARSING WSDL ====================");
 
@@ -232,6 +231,7 @@ public class WSDLBuilder {
 		} catch (SAXException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
+			throw e2;
 		}
 
 		String[] excelTitle = { "Element Name", "DataType", "Cardinality", 
@@ -372,6 +372,7 @@ public class WSDLBuilder {
 					} catch (IOException | ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						throw e;
 					}
 					System.out.println(operationInfo);
 				}
@@ -439,8 +440,9 @@ public class WSDLBuilder {
 	 * @param xsomParser
 	 * @param def
 	 * @return
+	 * @throws SAXException 
 	 */
-	public List<XSSchemaSet> parseSchemas(XSOMParser xsomParser, Definition def) {
+	public List<XSSchemaSet> parseSchemas(XSOMParser xsomParser, Definition def) throws SAXException {
 		List<XSSchemaSet> theTypes = new ArrayList<XSSchemaSet>();
 		Types types = def.getTypes();
 		Collection<ExtensibilityElement> elts = types
@@ -476,6 +478,7 @@ public class WSDLBuilder {
 					System.out.println("XSSchemaSet FAILED for "
 							+ targetNamespace);
 					e.printStackTrace();
+					throw e;
 				}
 
 			}
@@ -597,12 +600,11 @@ public class WSDLBuilder {
 	 * @param operationName
 	 * @param titles
 	 * @param data
-	 * @throws IOException
-	 * @throws ParseException
+	 * @throws Exception 
 	 */
 	public String createExcel(String serviceName, String operationName,
 			String[] titles, String[][] reqData, String[][] rspData, 
-			final S3BucketStorageService s3StorageService, Path tempDir) throws IOException, ParseException {
+			final S3BucketStorageService s3StorageService, Path tempDir) throws Exception {
 		Workbook wb = new XSSFWorkbook();
 
 		Map<String, CellStyle> styles = createStyles(wb, false);
