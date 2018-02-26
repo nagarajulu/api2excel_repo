@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
+
+  <head>
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <title>API2EXCEL - Generate Excel Documentation from your API files and save time.</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	
+    <!-- Custom styles for this template -->
+    <link href="css/scrolling-nav.css" rel="stylesheet"/>
+
+  </head>
+
+  <body id="page-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="#page-top">API2EXCEL</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">            
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#services">Generate Documents</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#about">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#issues">Submit Issues</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header class="bg-primary text-white">
+      <div class="container text-center">
+        <h1>Welcome to API-2-EXCEL DOCUMENT GENERATION PLATFORM</h1>
+        <p class="lead">Generate API Documentation from your API definitions itself and save time</p>
+      </div>
+    </header>
+
+	<section id="services" class="bg-light">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2>Generate your document</h2>
+            <p class="lead">.</p>
+            <form method="POST" enctype="multipart/form-data" action="/">
+				<table>
+					<tr><td>Please select one of APIs. </td><td></td></tr>
+					<tr><td colspan="2">1. WSDL (SOAP WebServices. External XSDs can also be uploaded together if any.)</td><td></td></tr>
+					<tr><td colspan="2">2. JSON (Swaggers - RESTful APIs) </td><td></td></tr>
+					<tr><td>Upload your API file (s). </td><td><input type="file" name="file" multiple="multiple"/></td></tr>
+					<tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+				</table>
+			</form>
+			<div th:if="${successMsg}" class="alert alert-success">
+				<h4 th:text="${successMsg}"/>
+			</div>
+			<div th:if="${message}" class="alert alert-danger">
+				<h4 th:text="${message}"/>
+			</div>
+			<div th:if="${apiUriList}">
+				<ul>
+					<li th:each="fileObj : ${apiUriList}">
+						<a th:href="${fileObj.uri}" th:text="${fileObj.filename}" />
+					</li>
+				</ul>					
+			</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section id="about">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2>About product</h2>
+            <p class="lead">API2EXCEL aims at saving developers quality time! It gets most of needed information in API definitions itself. Below are features:</p>
+            <ul>
+              <li>Generated API document will have "Request" and "Response" sheets. </li>
+              <li>Each sheet will have the following attributes parsed from WSDL/Swagger(JSON):
+	              <ul>
+		              <li>Element/Attribute Name: Name as per XSD/Swagger</li>
+		              <li>Data Type: Data Type from XSD/Swagger. For swagger, it also adds format.</li>
+		              <li>Cardinality: 1/1 - Mandatory, 0/1 - Optional, 1/* - One-to-many, 0/*-Zero to many</li>
+		              <li>X-Path: Path from Request/Response to the specific element</li>
+		              <li>Description: Annotation/Documentation from XSD, or Description from Swagger.</li>
+	              </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+
+	<section id="issues">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2>Submit Issues</h2>
+            <p class="lead">Please submit any issues or feature requests <a href="https://github.com/nagarajulu/api2excel_repo/issues/new">here</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section id="contact">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2>Contact us</h2>
+            <p class="lead">Please contact here. 
+            <a href="https://www.linkedin.com/in/nagarajulu/" class="fa fa-linkedin"></a>
+			<a href="https://twitter.com/nagarajulu" class="fa fa-twitter"></a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; API2EXCEL 2018 <a href="https://www.linkedin.com/in/nagarajulu/" class="fa fa-linkedin"></a>
+			<a href="https://twitter.com/nagarajulu" class="fa fa-twitter"></a></p>
+        
+      </div>
+      <!-- /.container -->
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom JavaScript for this theme -->
+    <script src="js/scrolling-nav.js"></script>
+
+  </body>
+
+</html>
