@@ -157,7 +157,7 @@ public class JSONBuilder {
 							//print the reqNode to excel.
 							final int lastIndexOf = refPathValue.lastIndexOf('/');
 							processRefJSONField(inputDoc, reqDefNode, refPathValue.substring(lastIndexOf), reqData, 
-									"body", refPathValue.substring(lastIndexOf+1), 0, false, "");
+									"body", refPathValue.substring(lastIndexOf+1), 0, false, "", false);
 						}
 						
 						//BEGIN RESPONSE --- PROCESSING
@@ -199,7 +199,7 @@ public class JSONBuilder {
 								//print the reqNode to excel.
 								final int lastIndexOf = refPathValue.lastIndexOf('/');
 								processRefJSONField(inputDoc, respDefNode, refPathValue.substring(lastIndexOf), rspData, 
-										"body", refPathValue.substring(lastIndexOf+1), 0, true, respStatusCode);
+										"body", refPathValue.substring(lastIndexOf+1), 0, true, respStatusCode, false);
 							}
 						}//outer while loop end
 
@@ -262,9 +262,15 @@ public class JSONBuilder {
 	}
 	
 	/**
-	 * Reads all attributes of a node and adds new row to reqRespData
+	 * Adds a Swagger API field into excel API source table.
 	 * @param reqRespData
 	 * @param fieldNode
+	 * @param path
+	 * @param paramType
+	 * @param fName
+	 * @param tabSpaceCtr
+	 * @param isResp
+	 * @param httpStatusCode
 	 */
 	public void addJSONFieldToExcel(ArrayList<String[]> reqRespData, JsonNode fieldNode, String path, String paramType, String fName, int tabSpaceCtr, 
 			boolean isResp, String httpStatusCode){
@@ -273,9 +279,13 @@ public class JSONBuilder {
 		//
 		//fieldType will have one of values: "path", "query", "body", "header", "form"; form - for multipart data.
 		final String fieldType = paramType!=null && paramType.isEmpty() ? fieldNode.path("in").getValueAsText() : paramType;
-		final String fieldName = fName!=null && fName.isEmpty() ? fieldNode.path("name").getValueAsText() : fName;
+		final String fieldName = fName!=null && !fName.isEmpty() ? fName: fieldNode.path("name").getValueAsText();
 		final String typeFormatInfo = fieldNode.path("format").isMissingNode()? "": "\n("+fieldNode.path("format").getValueAsText()+")";
 		
+		if(fieldName==null || fieldName.isEmpty()) {//no field name... probably reference to another structure. no need to add this into excel sheet.
+			//System.out.println("JSONBuilder.addJSONFieldToExcel(): empty field");
+			return;
+		}
 		//if currentNode is of type array, then update xpath to have []
 		final String typeDesc = fieldNode.path("type").isMissingNode() ? "": fieldNode.path("type").getValueAsText();
 		final boolean isCurrentNodeArray = typeDesc.equalsIgnoreCase("array") || !fieldNode.path("items").isMissingNode();
@@ -314,10 +324,12 @@ public class JSONBuilder {
 	 * @param reqRespData
 	 */
 	public void processRefJSONField(JsonNode inputDoc, JsonNode currentNode, String curPath, 
-			ArrayList<String[]> reqRespData, String fieldLocation, String fName, int tabSpaceCtr, boolean isResp, String httpStatusCode){
+			ArrayList<String[]> reqRespData, String fieldLocation, String fName, int tabSpaceCtr, boolean isResp, String httpStatusCode, boolean isRefNode){
 		
 		//add one entry for the currentNode
-		addJSONFieldToExcel(reqRespData, currentNode, curPath, fieldLocation, fName, tabSpaceCtr, isResp, httpStatusCode);
+		if(!isRefNode) {
+			addJSONFieldToExcel(reqRespData, currentNode, curPath, fieldLocation, fName, tabSpaceCtr, isResp, httpStatusCode);
+		}
 		
 		//exit condition
 		//check if the currentNode has properties or not. if not, we can exit this method.
@@ -329,26 +341,29 @@ public class JSONBuilder {
 		
 		//for each of its properties, recursively call this method.
 		//if it's ref, get that node, and recursively call this method.
-		final Iterator<String> itemsOrPropsNames = propNode.isMissingNode() ? itemsNode.getFieldNames() : propNode.getFieldNames();
+		final JsonNode targetChildNode = propNode.isMissingNode() ? itemsNode : propNode;
+		final Iterator<String> itemsOrPropsNames = targetChildNode.getFieldNames();
 		
 		while(itemsOrPropsNames.hasNext()){
 			final String fieldName = itemsOrPropsNames.next();
 			
-			final JsonNode fieldNode = propNode.path(fieldName);
-			
-			//processRefJSONField(inputDoc, fieldNode, curPath+"/"+fieldName, reqRespData, fieldLocation, fieldName, tabSpaceCtr+1, isResp, httpStatusCode);
+			final JsonNode fieldNode = targetChildNode.path(fieldName);
 			
 			//check if it has '$ref', then we need to get the actual node.
-			final JsonNode refNode = propNode.isMissingNode() ? itemsNode.findValue("$ref") : fieldNode.findValue("$ref");
+			final JsonNode refNode = propNode.isMissingNode() ? targetChildNode.findValue("$ref") : fieldNode.findValue("$ref");
+			final String newPath = curPath+"/"+fieldName;
 			if(refNode!=null && !refNode.isMissingNode()){
 				final String refNodeValue = refNode.getValueAsText();
 				final int lastIndexOf = refNodeValue.lastIndexOf("/");
 				final String refNodeFieldName = refNodeValue.substring(lastIndexOf+1);
 				final JsonNode actualRefFieldNode = inputDoc.path("definitions").path(refNodeFieldName);
-				processRefJSONField(inputDoc, actualRefFieldNode, curPath+"/"+fieldName, reqRespData, fieldLocation, fieldName, tabSpaceCtr+1, isResp, httpStatusCode);
+				if(!fieldName.equalsIgnoreCase("$ref")) {
+					addJSONFieldToExcel(reqRespData, fieldNode, newPath, fieldLocation, fieldName, tabSpaceCtr, isResp, httpStatusCode);
+				}				
+				processRefJSONField(inputDoc, actualRefFieldNode, newPath, reqRespData, fieldLocation, fieldName, tabSpaceCtr+1, isResp, httpStatusCode, true);
 			}
 			else{
-				processRefJSONField(inputDoc, fieldNode, curPath+"/"+fieldName, reqRespData, fieldLocation, fieldName, tabSpaceCtr+1, isResp, httpStatusCode);
+				processRefJSONField(inputDoc, fieldNode, newPath, reqRespData, fieldLocation, fieldName, tabSpaceCtr+1, isResp, httpStatusCode, false);
 			}
 		}
 		
