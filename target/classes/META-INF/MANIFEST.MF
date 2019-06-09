@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Implementation-Title: api2excel
-Implementation-Version: 0.1.1
-Built-By: enagaer
+Implementation-Version: 0.1.2
+Built-By: nagaraj
 Implementation-Vendor-Id: com.api2excel
 Build-Jdk: 1.8.0_121
 Implementation-URL: http://projects.spring.io/spring-boot/api2excel/
