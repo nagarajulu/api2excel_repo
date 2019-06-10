@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Implementation-Title: api2excel
-Implementation-Version: 0.1.2
+Implementation-Version: 0.1.3
 Built-By: nagaraj
 Implementation-Vendor-Id: com.api2excel
 Build-Jdk: 1.8.0_121
