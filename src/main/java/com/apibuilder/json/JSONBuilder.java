@@ -189,7 +189,7 @@ public class JSONBuilder {
 							
 							//find and print all response parameters.
 							final JsonNode respSchema = respHttpStatusNode.findPath("schema");
-							if(!respSchema.isMissingNode()){
+							if(!respSchema.isMissingNode() && respSchema.findValue("$ref")!=null){
 								final JsonNode findValue = respSchema.findValue("$ref");
 								System.out.println("Operation Request: "+findValue);
 								final String refPathValue = findValue.getValueAsText();
