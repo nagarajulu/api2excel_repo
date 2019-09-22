@@ -1,10 +1,10 @@
 Manifest-Version: 1.0
-Implementation-Title: api2excel
-Implementation-Version: 0.1.3
 Built-By: nagaraj
+Build-Jdk: 11.0.2
+Implementation-Title: api2excel
+Implementation-Version: 0.1.4
 Implementation-Vendor-Id: com.api2excel
-Build-Jdk: 1.8.0_121
+Implementation-Vendor: Pivotal Software, Inc.
 Implementation-URL: http://projects.spring.io/spring-boot/api2excel/
 Created-By: Maven Integration for Eclipse
-Implementation-Vendor: Pivotal Software, Inc.
 
