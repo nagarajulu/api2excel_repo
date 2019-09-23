@@ -78,20 +78,6 @@ public class Application {
         return tomcat;
     }
     
-    private Connector httpsConnector() {
-        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
-        Http11NioProtocol proto = (Http11NioProtocol) connector.getProtocolHandler();
-        proto.setSSLEnabled(true);
-        connector.setScheme("https");
-        connector.setSecure(true);
-		proto.setKeystoreFile(KeyStoreProps.keystorePath);
-		proto.setKeystorePass(ssm.getParameter(KeyStoreProps.keystorePasswordPath, true));
-		proto.setKeystoreType(KeyStoreProps.keystoreType);
-		//proto.setProperty("keystoreProvider", keystoreProvider);
-		proto.setKeyAlias(KeyStoreProps.keyAlias); 
-        return connector;
-    }
-    
     private Connector redirectConnector() {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         connector.setScheme("http");
