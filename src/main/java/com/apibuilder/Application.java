@@ -6,6 +6,7 @@ import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.descriptor.web.SecurityCollection;
 import org.apache.tomcat.util.descriptor.web.SecurityConstraint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -37,6 +38,9 @@ public class Application {
     
     private int maxUploadSizeInMb = 10 * 1024 * 1024; // 10 MB
     private AwsSystemsManagerClient ssm=new AwsSystemsManagerClient();
+    
+    @Value("${http.port}")
+    private int httpPort;
     
     @Bean
     public TomcatEmbeddedServletContainerFactory tomcatEmbedded() {
@@ -79,9 +83,9 @@ public class Application {
     }
     
     private Connector redirectConnector() {
-        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        Connector connector = new Connector(TomcatEmbeddedServletContainerFactory.DEFAULT_PROTOCOL);
         connector.setScheme("http");
-        connector.setPort(8080);
+        connector.setPort(httpPort);
         connector.setSecure(false);
         connector.setRedirectPort(8443);
         return connector;
